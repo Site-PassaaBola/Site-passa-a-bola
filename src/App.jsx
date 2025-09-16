@@ -52,8 +52,8 @@ export default function App() {
             {/* privadas */}
             <Route path="/" element={<RequireAuth><Inicio /></RequireAuth>} />
             <Route path="/campeonatos" element={<RequireAuth><Campeonatos /></RequireAuth>} />
-            <Route path="/times" element={<RequireAuth><Times /></RequireAuth>} />        {/* <<< LISTA */}
-            <Route path="/time/:slug" element={<RequireAuth><TimePerfil /></RequireAuth>} /> {/* <<< PERFIL */}
+            <Route path="/times" element={<RequireAuth><Times /></RequireAuth>} />
+            <Route path="/time/:slug" element={<RequireAuth><TimePerfil /></RequireAuth>} />
             <Route path="/noticias" element={<RequireAuth><Noticias /></RequireAuth>} />
             <Route path="/historia" element={<RequireAuth><Historia /></RequireAuth>} />
             <Route path="/inscricao" element={<RequireAuth><FormularioInscricao /></RequireAuth>} />
@@ -79,8 +79,10 @@ function Header() {
     <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
         <Link to="/" className="flex items-center gap-3">
-          <img src={logo} alt="Passa a Bola" className="w-10 h-10 object-contain" />
-          <span className="text-2xl font-extrabold text-purple-600">Passa a Bola</span>
+          {/* Logo maior: 20x20 (~80px) */}
+          <img src={logo} alt="Passa a Bola" className="w-20 h-20 object-contain" />
+          {/* Texto preto em vez de roxo */}
+          <span className="text-2xl font-extrabold text-black">Passa a Bola</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6 font-medium text-gray-700">
