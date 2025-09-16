@@ -1,4 +1,3 @@
-// src/pages/Campeonatos.jsx
 import React from "react";
 
 /* ========= Loader automático de imagens em src/assets/** ========= */
@@ -32,14 +31,17 @@ const pick = (...cands) => {
   return null;
 };
 
-/* ========= Mapeamento de nomes de time -> arquivo ========= */
+/* ========= Mapeamento de nomes de time -> arquivo (corrigido) ========= */
 const alias = {
   "sao-paulo": "brasao-do-sao-paulo-futebol-clube-svg",
+  spfc: "brasao-do-sao-paulo-futebol-clube-svg",
+  "sao-paulo-fc": "brasao-do-sao-paulo-futebol-clube-svg",
+
   "doce-mel": "docemel",
   "pinda-sp": "pindasp",
   botafogo: "botafogo",
   "tuna-luso": "tunaluso",
-  coritiba: "cortiba",
+  coritiba: "coritiba", // <- corrigido (antes estava 'cortiba')
   "rolim-de-moura": "rolimdemoura",
   santos: "santos",
   "perolas-negras": "perolasnegras",
@@ -51,26 +53,26 @@ const alias = {
 };
 const teamLogo = (name) => {
   const b = norm(name);
-  return pick(
+  const tries = [
     alias[b],
     b,
     b.replace(/-futebol-clube|fc|sc|ac/g, ""),
-    b.replace(/-sp/g, "")
-  );
+    b.replace(/-sp/g, ""),
+    b === "sao-paulo" ? "spfc" : null,
+  ].filter(Boolean);
+
+  for (const t of tries) {
+    const s = norm(t);
+    if (imgIndex[s]) return imgIndex[s];
+    const loose = Object.keys(imgIndex).find((k) => k.includes(s));
+    if (loose) return imgIndex[loose];
+  }
+  return null;
 };
 
 /* ========= Logos dos HEADERS ========= */
-const headerA1 = pick(
-  "BrasileiraoFeminino",
-  "BrasileiraFeminino",
-  "brasileirao-feminino",
-  "feminino-a1"
-);
-const headerCopa = pick(
-  "CopaBrasil",
-  "copa-do-brasil-feminina",
-  "copa-brasil-feminina"
-);
+const headerA1 = pick("BrasileiraoFeminino", "BrasileiraFeminino", "brasileirao-feminino", "feminino-a1");
+const headerCopa = pick("CopaBrasil", "copa-do-brasil-feminina", "copa-brasil-feminina");
 
 /* ========= Dados mock ========= */
 const tabela = [
@@ -91,9 +93,9 @@ const jogos = [
 
 /* ========= Tamanhos/alturas ========= */
 const SZ = {
-  headerH: 88,         // altura fixa das faixas (amarela e roxa)
-  headerLogoA1: 56,    // logo topo amarelo
-  headerLogoCopa: 68,  // logo topo roxo (maior, sem mudar a faixa)
+  headerH: 88,
+  headerLogoA1: 56,
+  headerLogoCopa: 68,
   tableLogo: 30,
   matchLogo: 40,
 };
@@ -105,7 +107,6 @@ export default function Campeonatos() {
         CAMPEONATOS EM ANDAMENTO
       </h1>
 
-      {/* importa: os filhos do grid vão esticar para terem a MESMA altura */}
       <div className="grid gap-6 md:gap-8 md:grid-cols-2 items-stretch">
         {/* ===== ESQUERDA: TABELA A1 ===== */}
         <section className="bg-white rounded-2xl shadow-[0_10px_24px_rgba(10,10,20,.06)] overflow-hidden h-full flex flex-col">
@@ -132,7 +133,6 @@ export default function Campeonatos() {
 
           <Tabela rows={tabela} />
 
-          {/* link empurrado para o rodapé e alinhado à direita */}
           <div className="mt-auto px-5 py-4 flex justify-end">
             <a href="#" className="inline-flex items-center gap-1 text-[#7B3AF5] font-semibold hover:underline">
               Ver Tabela Completa <span aria-hidden>→</span>
@@ -163,14 +163,12 @@ export default function Campeonatos() {
             </div>
           </div>
 
-          {/* conteúdo ocupa o espaço disponível */}
           <div className="p-4 sm:p-5 space-y-3 flex-1">
             {jogos.map((j, i) => (
               <Jogo key={i} j={j} />
             ))}
           </div>
 
-          {/* link empurrado para o rodapé e alinhado à direita */}
           <div className="mt-auto px-5 py-4 flex justify-end">
             <a href="#" className="inline-flex items-center gap-1 text-[#7B3AF5] font-semibold hover:underline">
               Ver Chaveamento Completo <span aria-hidden>→</span>
@@ -198,7 +196,6 @@ function Logo({ src, alt, size }) {
   );
 }
 
-/* ===== Tabela A1 (alinhamento dos headers/valores) ===== */
 function Tabela({ rows }) {
   return (
     <div className="overflow-x-auto">
@@ -288,7 +285,6 @@ function Jogo({ j }) {
   );
 }
 
-/* ====== ALTERADO AQUI: data como texto simples (sem select) ====== */
 function ResultadoCard({ r }) {
   return (
     <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
