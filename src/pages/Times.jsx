@@ -13,19 +13,12 @@ const assetsUpper = import.meta.glob("../assets/**/*.{PNG,JPG,JPEG,SVG,WEBP}", {
 });
 const allAssets = { ...assetsLower, ...assetsUpper };
 
-/* Normalizador e util p/ tirar TODAS as extensões (ex: .svg.png) */
 const norm = (s = "") =>
   s
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-");
-
-const baseName = (path = "") => {
-  const file = path.split("/").pop() || "";
-  // remove TODAS as extensões conhecidas (se tiver .svg.png, some com as duas)
-  return file.replace(/\.(png|jpe?g|svg|webp)/gi, "");
-};
 
 /** Busca EXATA pelo nome do arquivo (sem extensão) */
 const getAssetExact = (keyOrKeys) => {
@@ -34,14 +27,14 @@ const getAssetExact = (keyOrKeys) => {
     if (!key) continue;
     const want = norm(key);
     for (const [path, src] of Object.entries(allAssets)) {
-      const base = baseName(path);
+      const base = path.split("/").pop().split(".")[0];
       if (norm(base) === want) return src;
     }
   }
   return null;
 };
 
-/** Foto grande do card */
+/** Foto grande do card: tenta exato; se falhar, procura qualquer arquivo do clube que NÃO seja escudo/logo */
 const getTeamPhoto = (clubName, photoKeys = []) => {
   const exata = getAssetExact(photoKeys);
   if (exata) return exata;
@@ -50,10 +43,10 @@ const getTeamPhoto = (clubName, photoKeys = []) => {
   let candidato = null;
 
   for (const [path, src] of Object.entries(allAssets)) {
-    const b = norm(baseName(path));
+    const base = path.split("/").pop().split(".")[0];
+    const b = norm(base);
     const hasClub = b.includes(club);
-    const isCrestLike =
-      b.includes("escudo") || b.includes("logo") || b.includes("badge") || b.includes("brasao");
+    const isCrestLike = b.includes("escudo") || b.includes("logo") || b.includes("badge");
     if (hasClub && !isCrestLike) {
       const hasHint = b.includes("time") || b.includes("tima") || b.includes("team");
       if (hasHint) return src;
@@ -63,21 +56,24 @@ const getTeamPhoto = (clubName, photoKeys = []) => {
   return candidato;
 };
 
-/** Escudo do clube */
-const getCrest = (clubName, crestKeys = []) => {
-  const byKeys = getAssetExact(crestKeys);
+/** Busca “inteligente” para escudos; tenta crestKeys ∪ photoKeys; se nada, usa foto do time */
+const getCrest = (clubName, crestOrPhotoKeys = [], photoKeys = []) => {
+  const byKeys = getAssetExact([...(crestOrPhotoKeys || []), ...(photoKeys || [])]);
   if (byKeys) return byKeys;
 
   const club = norm(clubName);
   for (const [path, src] of Object.entries(allAssets)) {
-    const b = norm(baseName(path));
+    const base = path.split("/").pop().split(".")[0];
+    const b = norm(base);
     const hasClub = b.includes(club);
-    const isCrestLike =
-      b.includes("escudo") || b.includes("logo") || b.includes("badge") || b.includes("brasao");
+    const isCrestLike = b.includes("escudo") || b.includes("logo") || b.includes("badge");
     if (hasClub && isCrestLike) return src;
   }
-  // fallback: tentar nome do clube puro
-  return getAssetExact([clubName]);
+
+  const exactClub = getAssetExact([clubName]);
+  if (exactClub) return exactClub;
+
+  return getTeamPhoto(clubName, photoKeys);
 };
 
 /* ===== Dados dos cards ===== */
@@ -103,7 +99,13 @@ const TOP = [
     nome: "Palmeiras",
     cidade: "São Paulo",
     fundacao: 2019,
-    fotoKey: ["TimePalmeira", "TimePalmeiras", "TimaPalmeira", "TimaPalmeiras", "PalmeirasFeminino"],
+    fotoKey: [
+      "TimePalmeira",
+      "TimePalmeiras",
+      "TimaPalmeira",
+      "TimaPalmeiras",
+      "PalmeirasFeminino",
+    ],
     crestKey: ["EscudoPalmeiras", "Palmeiras-escudo", "Palmeiras-logo", "Palmeiras"],
   },
 ];
@@ -123,16 +125,7 @@ const BOTTOM = [
     cidade: "São Paulo",
     fundacao: 1997,
     fotoKey: ["TimeSaoPaulo", "SaoPaulo", "SPFC"],
-    // Incluí o NOME REAL do teu arquivo (sem extensão) para o match EXATO:
-    // "Brasao_do_Sao_Paulo_Futebol_Clube.svg.png" -> base = "Brasao_do_Sao_Paulo_Futebol_Clube"
-    crestKey: [
-      "Brasao_do_Sao_Paulo_Futebol_Clube",
-      "EscudoSaoPaulo",
-      "SPFC-escudo",
-      "SaoPaulo-logo",
-      "Sao Paulo",
-      "SPFC",
-    ],
+    crestKey: ["EscudoSaoPaulo", "SPFC-escudo", "SaoPaulo-logo", "São Paulo", "TimeSaoPaulo"],
   },
   {
     slug: "cruzeiro",
@@ -146,14 +139,19 @@ const BOTTOM = [
 
 function TeamCard({ item }) {
   const foto = getTeamPhoto(item.nome, item.fotoKey);
-  const logo = getCrest(item.nome, item.crestKey);
+  const logo = getCrest(item.nome, item.crestKey, item.fotoKey);
 
   return (
     <article className="bg-white rounded-2xl shadow-[0_10px_24px_rgba(10,10,20,.06)] overflow-hidden flex flex-col">
       {/* Foto grande */}
       <div className="w-full h-[280px] md:h-[320px] lg:h-[360px] overflow-hidden">
         {foto ? (
-          <img src={foto} alt={`Foto do ${item.nome}`} className="w-full h-full object-cover" loading="lazy" />
+          <img
+            src={foto}
+            alt={`Foto do ${item.nome}`}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
         ) : (
           <div className="w-full h-full bg-gray-200 grid place-items-center text-gray-500 text-center px-4">
             (adicione uma imagem com nome EXATO como:{" "}
@@ -168,7 +166,14 @@ function TeamCard({ item }) {
       {/* Faixa branca */}
       <div className="p-5 md:p-6">
         <div className="flex items-start gap-3">
-          {logo && <img src={logo} alt={`${item.nome} logo`} className="w-10 h-10 object-contain" loading="lazy" />}
+          {logo && (
+            <img
+              src={logo}
+              alt={`${item.nome} logo`}
+              className="w-10 h-10 object-contain"
+              loading="lazy"
+            />
+          )}
           <div>
             <h3
               className="text-[32px] leading-8 md:text-[36px] md:leading-9 font-black"
@@ -182,7 +187,7 @@ function TeamCard({ item }) {
           </div>
         </div>
 
-        {/* Botão -> Perfil */}
+        {/* Botão -> Perfil (BRANCO com borda) */}
         <div className="mt-6">
           <Link
             to={`/time/${item.slug}`}
@@ -200,6 +205,7 @@ export default function Times() {
   return (
     <main className="bg-[#F5F6FF]">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Título / subtítulo */}
         <header className="text-center mb-8">
           <h1
             className="text-[44px] md:text-[56px] leading-[0.9] font-black"
@@ -207,29 +213,30 @@ export default function Times() {
           >
             Times em Destaque
           </h1>
-          <p className="text-gray-600 mt-2">Conheça os principais times do futebol feminino</p>
+          <p className="text-gray-600 mt-2">
+            Conheça os principais times do futebol feminino
+          </p>
         </header>
 
+        {/* Grid TOP */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {TOP.map((t) => (
             <TeamCard key={t.slug} item={t} />
           ))}
         </div>
 
+        {/* CTA */}
+        <div className="flex justify-center">
+          <button className="btn-purple mt-8 rounded-2xl px-6 py-3 font-extrabold tracking-wide bg-[#7B3AF5] hover:brightness-95">
+            Ver Todos os Times →
+          </button>
+        </div>
+
+        {/* Grid BOTTOM */}
         <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {BOTTOM.map((t) => (
             <TeamCard key={t.slug} item={t} />
           ))}
-        </div>
-
-        {/* CTA — só no final */}
-        <div className="flex justify-center">
-          <Link
-            to="/times"
-            className="mt-10 bg-[#7B3AF5] text-white rounded-2xl px-6 py-3 font-extrabold tracking-wide hover:brightness-95 no-underline"
-          >
-            Ver Todos os Times →
-          </Link>
         </div>
       </section>
     </main>
