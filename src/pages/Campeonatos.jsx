@@ -51,12 +51,26 @@ const alias = {
 };
 const teamLogo = (name) => {
   const b = norm(name);
-  return pick(alias[b], b, b.replace(/-futebol-clube|fc|sc|ac/g, ""), b.replace(/-sp/g, ""));
+  return pick(
+    alias[b],
+    b,
+    b.replace(/-futebol-clube|fc|sc|ac/g, ""),
+    b.replace(/-sp/g, "")
+  );
 };
 
 /* ========= Logos dos HEADERS ========= */
-const headerA1 = pick("BrasileiraoFeminino", "BrasileiraFeminino", "brasileirao-feminino", "feminino-a1");
-const headerCopa = pick("CopaBrasil", "copa-do-brasil-feminina", "copa-brasil-feminina");
+const headerA1 = pick(
+  "BrasileiraoFeminino",
+  "BrasileiraFeminino",
+  "brasileirao-feminino",
+  "feminino-a1"
+);
+const headerCopa = pick(
+  "CopaBrasil",
+  "copa-do-brasil-feminina",
+  "copa-brasil-feminina"
+);
 
 /* ========= Dados mock ========= */
 const tabela = [
@@ -91,9 +105,10 @@ export default function Campeonatos() {
         CAMPEONATOS EM ANDAMENTO
       </h1>
 
-      <div className="grid gap-6 md:gap-8 md:grid-cols-2">
+      {/* importa: os filhos do grid vão esticar para terem a MESMA altura */}
+      <div className="grid gap-6 md:gap-8 md:grid-cols-2 items-stretch">
         {/* ===== ESQUERDA: TABELA A1 ===== */}
-        <section className="bg-white rounded-2xl shadow-[0_10px_24px_rgba(10,10,20,.06)] overflow-hidden">
+        <section className="bg-white rounded-2xl shadow-[0_10px_24px_rgba(10,10,20,.06)] overflow-hidden h-full flex flex-col">
           <div className="bg-[#FADF63] rounded-t-2xl px-5 flex items-center" style={{ height: SZ.headerH }}>
             <div className="flex items-center gap-3">
               {headerA1 && (
@@ -117,15 +132,16 @@ export default function Campeonatos() {
 
           <Tabela rows={tabela} />
 
-          <div className="px-5 py-4">
-            <a href="#" className="inline-block text-[#7B3AF5] font-semibold hover:underline">
-              Ver Tabela Completa →
+          {/* link empurrado para o rodapé e alinhado à direita */}
+          <div className="mt-auto px-5 py-4 flex justify-end">
+            <a href="#" className="inline-flex items-center gap-1 text-[#7B3AF5] font-semibold hover:underline">
+              Ver Tabela Completa <span aria-hidden>→</span>
             </a>
           </div>
         </section>
 
         {/* ===== DIREITA: COPA DO BRASIL ===== */}
-        <section className="bg-white rounded-2xl shadow-[0_10px_24px_rgba(10,10,20,.06)] overflow-hidden">
+        <section className="bg-white rounded-2xl shadow-[0_10px_24px_rgba(10,10,20,.06)] overflow-hidden h-full flex flex-col">
           <div className="bg-[#7B3AF5] rounded-t-2xl px-5 flex items-center" style={{ height: SZ.headerH }}>
             <div className="flex items-center gap-3">
               {headerCopa && (
@@ -147,15 +163,17 @@ export default function Campeonatos() {
             </div>
           </div>
 
-          <div className="p-4 sm:p-5 space-y-3">
+          {/* conteúdo ocupa o espaço disponível */}
+          <div className="p-4 sm:p-5 space-y-3 flex-1">
             {jogos.map((j, i) => (
               <Jogo key={i} j={j} />
             ))}
           </div>
 
-          <div className="px-5 py-4">
-            <a href="#" className="inline-block text-[#7B3AF5] font-semibold hover:underline">
-              Ver Chaveamento Completo →
+          {/* link empurrado para o rodapé e alinhado à direita */}
+          <div className="mt-auto px-5 py-4 flex justify-end">
+            <a href="#" className="inline-flex items-center gap-1 text-[#7B3AF5] font-semibold hover:underline">
+              Ver Chaveamento Completo <span aria-hidden>→</span>
             </a>
           </div>
         </section>
@@ -186,14 +204,14 @@ function Tabela({ rows }) {
     <div className="overflow-x-auto">
       <table className="w-full text-left table-fixed">
         <colgroup>
-          <col style={{ width: "60px" }} />   {/* Pos */}
-          <col />                              {/* Time */}
-          <col style={{ width: "64px" }} />   {/* Pts */}
-          <col style={{ width: "56px" }} />   {/* Vit */}
-          <col style={{ width: "56px" }} />   {/* E */}
-          <col style={{ width: "56px" }} />   {/* D */}
-          <col style={{ width: "64px" }} />   {/* SG */}
-          <col style={{ width: "64px" }} />   {/* PJ */}
+          <col style={{ width: "60px" }} />
+          <col />
+          <col style={{ width: "64px" }} />
+          <col style={{ width: "56px" }} />
+          <col style={{ width: "56px" }} />
+          <col style={{ width: "56px" }} />
+          <col style={{ width: "64px" }} />
+          <col style={{ width: "64px" }} />
         </colgroup>
 
         <thead>

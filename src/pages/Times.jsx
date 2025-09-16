@@ -34,7 +34,7 @@ const getAssetExact = (keyOrKeys) => {
   return null;
 };
 
-/** Foto grande do card: tenta exato; se falhar, procura qualquer arquivo do clube que NÃO seja escudo/logo */
+/** Foto grande do card */
 const getTeamPhoto = (clubName, photoKeys = []) => {
   const exata = getAssetExact(photoKeys);
   if (exata) return exata;
@@ -48,7 +48,6 @@ const getTeamPhoto = (clubName, photoKeys = []) => {
     const hasClub = b.includes(club);
     const isCrestLike = b.includes("escudo") || b.includes("logo") || b.includes("badge");
     if (hasClub && !isCrestLike) {
-      // preferir nomes que indiquem "time"/"tima"/"team"
       const hasHint = b.includes("time") || b.includes("tima") || b.includes("team");
       if (hasHint) return src;
       candidato = candidato || src;
@@ -57,7 +56,7 @@ const getTeamPhoto = (clubName, photoKeys = []) => {
   return candidato;
 };
 
-/** Busca “inteligente” para escudos (prioriza nomes com escudo/logo) e cai para exato/solto */
+/** Escudo do clube */
 const getCrest = (clubName, crestKeys = []) => {
   const byKeys = getAssetExact(crestKeys);
   if (byKeys) return byKeys;
@@ -96,7 +95,6 @@ const TOP = [
     nome: "Palmeiras",
     cidade: "São Paulo",
     fundacao: 2019,
-    // inclui TimePalmeira (sem S)
     fotoKey: [
       "TimePalmeira",
       "TimePalmeiras",
@@ -185,7 +183,7 @@ function TeamCard({ item }) {
           </div>
         </div>
 
-        {/* Botão -> Perfil (AGORA SEMPRE BRANCO) */}
+        {/* Botão -> Perfil */}
         <div className="mt-6">
           <Link
             to={`/time/${item.slug}`}
@@ -223,18 +221,21 @@ export default function Times() {
           ))}
         </div>
 
-        {/* CTA */}
-        <div className="flex justify-center">
-          <button className="mt-8 bg-[#7B3AF5] text-white rounded-2xl px-6 py-3 font-extrabold tracking-wide hover:brightness-95">
-            Ver Todos os Times →
-          </button>
-        </div>
-
         {/* Grid BOTTOM */}
         <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {BOTTOM.map((t) => (
             <TeamCard key={t.slug} item={t} />
           ))}
+        </div>
+
+        {/* CTA — AGORA SÓ NO FINAL */}
+        <div className="flex justify-center">
+          <Link
+            to="/times"
+            className="mt-10 bg-[#7B3AF5] text-white rounded-2xl px-6 py-3 font-extrabold tracking-wide hover:brightness-95 no-underline"
+          >
+            Ver Todos os Times →
+          </Link>
         </div>
       </section>
     </main>

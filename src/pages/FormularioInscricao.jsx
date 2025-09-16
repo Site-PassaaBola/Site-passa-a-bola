@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+/* Storage helper */
 function getInscricoesFromStorage() {
   try {
     return JSON.parse(localStorage.getItem("inscricoes") || "[]");
@@ -23,8 +24,8 @@ export default function FormularioInscricao() {
   });
 
   const [mensagem, setMensagem] = useState("");
-  const [showModal, setShowModal] = useState(false);  // Modal de confirmação
-  const [showAlert, setShowAlert] = useState(false);  // Mensagem de alerta de sucesso
+  const [showModal, setShowModal] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,39 +35,44 @@ export default function FormularioInscricao() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validação dos campos obrigatórios
-    if (!form.nome.trim() || !form.email.trim() || !form.telefone.trim() || !form.posicao.trim() || !form.experiencia.trim()) {
+    if (
+      !form.nome.trim() ||
+      !form.email.trim() ||
+      !form.telefone.trim() ||
+      !form.posicao.trim() ||
+      !form.experiencia.trim()
+    ) {
       setMensagem("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
 
-    // Exibe o modal de confirmação
-    setShowModal(true);  
+    setShowModal(true);
   };
 
   const handleConfirmSubmit = () => {
-    // Quando o usuário confirmar o envio
     const inscricoes = getInscricoesFromStorage();
+
+    // timestamp estável
+    const createdAt = Date.now();
     const nova = {
       id: inscricoes.length + 1,
       ...form,
-      dataHora: new Date().toLocaleString("pt-BR"),
+      createdAt, // número para ordenar/estabilidade
+      dataHora: new Date(createdAt).toLocaleString("pt-BR"), // exibição
     };
 
     inscricoes.push(nova);
     localStorage.setItem("inscricoes", JSON.stringify(inscricoes));
 
-    // Exibe o alert de sucesso
     setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 5000); // O alert fica visível por 5 segundos
+    setTimeout(() => setShowAlert(false), 5000);
 
-    setShowModal(false);  // Fecha o modal
-    navigate("/inscricoes");  // Volta para lista de inscrições
+    setShowModal(false);
+    navigate("/inscricoes");
   };
 
   const handleCancelSubmit = () => {
-    // Quando o usuário cancelar o envio
-    setShowModal(false);  // Fecha o modal
+    setShowModal(false);
   };
 
   return (
@@ -107,9 +113,7 @@ export default function FormularioInscricao() {
           onSubmit={handleSubmit}
           className="bg-white p-8 rounded-2xl shadow-md border border-gray-100 space-y-6"
         >
-          {/* Campos do Formulário */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Campos de entrada */}
             <div>
               <label className="block text-sm font-medium">Nome Completo *</label>
               <input
@@ -197,7 +201,9 @@ export default function FormularioInscricao() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium">Time Atual (opcional)</label>
+              <label className="block text-sm font-medium">
+                Time Atual (opcional)
+              </label>
               <input
                 name="time"
                 value={form.time}
@@ -208,7 +214,9 @@ export default function FormularioInscricao() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium">Observações (opcional)</label>
+              <label className="block text-sm font-medium">
+                Observações (opcional)
+              </label>
               <textarea
                 name="observacoes"
                 value={form.observacoes}
@@ -258,7 +266,9 @@ export default function FormularioInscricao() {
       {/* Mensagem de sucesso */}
       {showAlert && (
         <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white p-4 rounded-lg shadow-lg max-w-sm w-full">
-          <p className="font-semibold text-center">✅ Inscrição enviada com sucesso!</p>
+          <p className="font-semibold text-center">
+            ✅ Inscrição enviada com sucesso!
+          </p>
         </div>
       )}
     </div>

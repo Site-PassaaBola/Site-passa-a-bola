@@ -1,4 +1,3 @@
-// src/pages/Servidorlogin.jsx
 // Mock do "servidor": aceita QUALQUER email, desde que a senha seja "1234".
 export function autenticar({ email, senha }) {
   return new Promise((resolve, reject) => {
