@@ -1,0 +1,235 @@
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
+
+// Páginas
+import Login from "./components/Login";
+import Inicio from "./pages/Inicio";
+import Campeonatos from "./pages/Campeonatos";
+import Times from "./pages/Times";
+import Noticias from "./pages/Noticias";
+import Historia from "./pages/Historia";
+import Inscricoes from "./pages/Inscricoes";
+import FormularioInscricao from "./pages/FormularioInscricao"; // Página do formulário de inscrição
+
+// Estilos globais
+import "./index.css";
+
+// Logo
+import logo from "./assets/logo.png";
+
+function isAuthed() {
+  try {
+    return !!JSON.parse(localStorage.getItem("auth") || "null")?.ok;
+  } catch {
+    return false;
+  }
+}
+
+function logout() {
+  localStorage.removeItem("auth");
+  window.location.replace("/login");
+}
+
+/** Guard para rotas privadas */
+function RequireAuth({ children }) {
+  const authed = isAuthed();
+  const location = useLocation();
+  if (!authed) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+  return children;
+}
+
+export default function App() {
+  return (
+    <Router>
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        {/* Header aparece em tudo exceto na tela de login */}
+        <Header />
+        <main className="flex-1 w-full">
+          <Routes>
+            {/* Página pública de login */}
+            <Route path="/login" element={<Login />} />
+
+            {/* Rotas privadas */}
+            <Route
+              path="/"
+              element={
+                <RequireAuth>
+                  <Inicio />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/campeonatos"
+              element={
+                <RequireAuth>
+                  <Campeonatos />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/times"
+              element={
+                <RequireAuth>
+                  <Times />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/noticias"
+              element={
+                <RequireAuth>
+                  <Noticias />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/historia"
+              element={
+                <RequireAuth>
+                  <Historia />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/inscricao"
+              element={
+                <RequireAuth>
+                  <FormularioInscricao />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/inscricoes"
+              element={
+                <RequireAuth>
+                  <Inscricoes />
+                </RequireAuth>
+              }
+            />
+
+            {/* Fallback (caso a rota não exista) */}
+            <Route path="*" element={<Navigate to={isAuthed() ? "/" : "/login"} replace />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </Router>
+  );
+}
+
+/* ====== Header (navbar + mobile) ====== */
+function Header() {
+  const location = useLocation();
+  const onLoginPage = location.pathname === "/login";
+  if (onLoginPage) return null;
+
+  const authed = isAuthed();
+
+  return (
+    <header className="bg-white shadow-md sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
+        <Link to="/" className="flex items-center gap-3">
+          <img src={logo} alt="Passa a Bola" className="w-10 h-10 object-contain" />
+          <span className="text-2xl font-extrabold text-purple-600">Passa a Bola</span>
+        </Link>
+
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-6 font-medium text-gray-700">
+          <NavLink to="/">Início</NavLink>
+          <NavLink to="/campeonatos">Campeonatos</NavLink>
+          <NavLink to="/times">Times</NavLink>
+          <NavLink to="/noticias">Notícias</NavLink>
+          <NavLink to="/historia">História</NavLink>
+
+          <Link
+            to="/inscricao"
+            className="bg-purple text-white px-4 py-2 rounded-xl hover:bg-purple-700 transition-all"
+          >
+            Inscrição
+          </Link>
+          <Link
+            to="/inscricoes"
+            className="text-purple-600 font-semibold hover:text-purple-700"
+          >
+            Inscrições
+          </Link>
+
+          {/* === Botão SAIR (só mostra se logado) === */}
+          {authed && (
+            <button
+              onClick={logout}
+              className="ml-2 px-4 py-2 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+              title="Sair"
+            >
+              Sair
+            </button>
+          )}
+        </nav>
+
+        {/* Mobile nav */}
+        <div className="md:hidden">
+          <MobileMenu authed={authed} />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function NavLink({ to, children }) {
+  return (
+    <Link to={to} className="hover:text-purple-600 transition-colors">
+      {children}
+    </Link>
+  );
+}
+
+/* ====== Mobile menu ====== */
+function MobileMenu({ authed }) {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        aria-label="Abrir menu"
+        onClick={() => setOpen((v) => !v)}
+        className="p-2 rounded-md border border-gray-300"
+      >
+        ☰
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg flex flex-col p-3 gap-2">
+          <Link onClick={() => setOpen(false)} to="/" className="px-2 py-2 rounded hover:bg-gray-100">Início</Link>
+          <Link onClick={() => setOpen(false)} to="/campeonatos" className="px-2 py-2 rounded hover:bg-gray-100">Campeonatos</Link>
+          <Link onClick={() => setOpen(false)} to="/times" className="px-2 py-2 rounded hover:bg-gray-100">Times</Link>
+          <Link onClick={() => setOpen(false)} to="/noticias" className="px-2 py-2 rounded hover:bg-gray-100">Notícias</Link>
+          <Link onClick={() => setOpen(false)} to="/historia" className="px-2 py-2 rounded hover:bg-gray-100">História</Link>
+          <Link onClick={() => setOpen(false)} to="/inscricao" className="px-2 py-2 rounded bg-purple text-white text-center">Inscrição</Link>
+          <Link onClick={() => setOpen(false)} to="/inscricoes" className="px-2 py-2 rounded hover:bg-gray-100 text-center">Inscrições Realizadas</Link>
+
+          {authed && (
+            <button
+              onClick={() => { setOpen(false); logout(); }}
+              className="mt-1 px-2 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-left"
+            >
+              Sair
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ====== Footer ====== */
+function Footer() {
+  const location = useLocation();
+  if (location.pathname === "/login") return null;
+  return (
+    <footer className="bg-gray-100 text-gray-700 text-center py-6 mt-8">
+      &copy; {new Date().getFullYear()} Passa a Bola. Todos os direitos reservados.
+    </footer>
+  );
+}
