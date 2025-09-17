@@ -22,7 +22,7 @@ Arthur Gaspare Gil — RM 555746
 ---
 
 ## 🌍 Links Importantes
-- 🔗 **Deploy (Vercel):** 
+- 🔗 **Deploy (Vercel):** https://site-passa-a-bola-hu1i.vercel.app/login
 - 🏢 **Organização (GitHub/Institucional):** https://github.com/Site-PassaaBola/Site-passa-a-bola
 
 ---
@@ -76,6 +76,7 @@ Fortalecer o futebol feminino como movimento cultural, esportivo e social.
 📄 Licença
 
 Uso acadêmico e social – FIAP.
+
 
 
 
